@@ -25,6 +25,7 @@ from ultron.ddos_guard import ddos_guard
 from ultron.crypto_challenge import crypto_challenge
 from ultron.oob_engine import oob_engine
 from ultron.spa_crawler import spa_crawler
+from ultron.active_prober import active_prober
 from ultron.alert_dispatcher import alert_dispatcher
 from ultron.ueba_engine import ueba_engine
 from ultron.cluster_bus import cluster_bus
@@ -158,6 +159,17 @@ def live_stream_api():
         finally:
             alert_dispatcher.unsubscribe_live_stream(q)
     return Response(stream(), mimetype="text/event-stream")
+
+
+@app.route("/api/probe/active", methods=["POST"])
+def active_probe_api():
+    """Runs active non-destructive probing (CORS, Verb Tampering, Hidden Params) on a target URL."""
+    data = request.get_json(silent=True) or {}
+    url = (data.get("target_url") or "").strip()
+    if not url:
+        return jsonify({"error": "target_url est obligatoire"}), 400
+    res = active_prober.run_full_active_probe(url)
+    return jsonify(res)
 
 if __name__ == "__main__":
     init_ultron()

@@ -81,6 +81,7 @@ from .alert_dispatcher import alert_dispatcher, AlertDispatcher
 from .ueba_engine import ueba_engine, UEBAEngine
 from .ci_scanner import CIScanner
 from .cluster_bus import cluster_bus, ClusterBus
+from .active_prober import active_prober, ActiveProber
 from .pentagi_engine import (
     pentagi_engine,
     PentAGIIntegrationEngine,
