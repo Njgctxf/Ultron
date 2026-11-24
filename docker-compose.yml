@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  ultron-soc:
+    build: .
+    container_name: ultron-soc
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - ULTRON_DATA_DIR=/app/data
+    volumes:
+      - ultron-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  ultron-data:
