@@ -18,6 +18,8 @@ from ..virtual_patching import virtual_patch_engine
 from ..threat_intel import threat_intel
 from ..ddos_guard import ddos_guard
 from ..dlp_engine import dlp_engine
+from ..deserialization_guard import deserialization_guard
+from ..cloud_guard import cloud_guard
 from ..alert_dispatcher import alert_dispatcher
 
 class UltronShield:
@@ -59,6 +61,19 @@ class UltronShield:
         if ddos_hit:
             return Response(f"Ultron Anti-DDoS : {ddos_hit['reason']}", 429,
                             headers={"Retry-After": str(ddos_hit.get("retry_after", 900))}, mimetype="text/plain")
+
+        # 2.5 Insecure Deserialization & Cloud Metadata Abuse Guard
+        deser_hit = deserialization_guard.inspect_payload(body or query)
+        if deser_hit:
+            alert_dispatcher.broadcast_incident("DESERIALIZATION_ATTACK", "CRITICAL", client_ip, deser_hit["reason"], path)
+            return Response(f"Attaque neutralisée par Ultron : {deser_hit['reason']}", 403,
+                            headers={"X-Ultron-Threat": "insecure_deserialization"}, mimetype="text/plain")
+
+        cloud_hit = cloud_guard.inspect_url_target(query)
+        if cloud_hit:
+            alert_dispatcher.broadcast_incident("CLOUD_METADATA_PROBE", "CRITICAL", client_ip, cloud_hit["reason"], path)
+            return Response(f"Attaque neutralisée par Ultron : {cloud_hit['reason']}", 403,
+                            headers={"X-Ultron-Threat": "cloud_metadata_abuse"}, mimetype="text/plain")
 
         # 3. Virtual Patching Check
         vp_hit = virtual_patch_engine.inspect_request(method, path, query, body)

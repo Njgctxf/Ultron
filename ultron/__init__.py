@@ -82,6 +82,10 @@ from .ueba_engine import ueba_engine, UEBAEngine
 from .ci_scanner import CIScanner
 from .cluster_bus import cluster_bus, ClusterBus
 from .active_prober import active_prober, ActiveProber
+from .deserialization_guard import deserialization_guard, DeserializationGuard
+from .prompt_guard import prompt_guard, PromptGuard
+from .crypto_audit import crypto_auditor, CryptoAuditor
+from .cloud_guard import cloud_guard, CloudGuard
 from .pentagi_engine import (
     pentagi_engine,
     PentAGIIntegrationEngine,

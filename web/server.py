@@ -26,6 +26,12 @@ from ultron.crypto_challenge import crypto_challenge
 from ultron.oob_engine import oob_engine
 from ultron.spa_crawler import spa_crawler
 from ultron.active_prober import active_prober
+from ultron.deserialization_guard import deserialization_guard
+from ultron.prompt_guard import prompt_guard
+from ultron.crypto_audit import crypto_auditor
+from ultron.cloud_guard import cloud_guard
+from ultron.race_engine import audit_race_condition
+from ultron.logic_engine import audit_price_tampering, audit_role_pollution
 from ultron.alert_dispatcher import alert_dispatcher
 from ultron.ueba_engine import ueba_engine
 from ultron.cluster_bus import cluster_bus
@@ -170,6 +176,29 @@ def active_probe_api():
         return jsonify({"error": "target_url est obligatoire"}), 400
     res = active_prober.run_full_active_probe(url)
     return jsonify(res)
+
+
+@app.route("/api/audit/crypto", methods=["POST"])
+def audit_crypto_api():
+    """Audits Python source code for timing attacks and insecure randomness."""
+    data = request.get_json(silent=True) or {}
+    code = data.get("source_code", "")
+    filename = data.get("filename", "app.py")
+    findings = crypto_auditor.audit_python_code(code, filename)
+    return jsonify({"findings_count": len(findings), "findings": findings})
+
+@app.route("/api/audit/cloud", methods=["GET"])
+def audit_cloud_api():
+    """Audits environment for exposed cloud metadata or container sockets."""
+    return jsonify(cloud_guard.audit_container_environment())
+
+@app.route("/api/guard/prompt-sanitize", methods=["POST"])
+def guard_prompt_api():
+    """Sanitizes untrusted text and defangs indirect prompt injections."""
+    data = request.get_json(silent=True) or {}
+    text = data.get("untrusted_text", "")
+    sanitized, findings = prompt_guard.inspect_and_sanitize(text)
+    return jsonify({"sanitized_text": sanitized, "threats_detected": len(findings), "findings": findings})
 
 if __name__ == "__main__":
     init_ultron()
